@@ -1,1 +1,28 @@
+name: AutoTouch App Compiler
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
 
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Build Application Package
+      run: |
+        xcrun -sdk iphoneos swiftc -o AutoTouch ContentView.swift -target arm64-apple-ios14.0
+        mkdir -p AutoTouch.app
+        mv AutoTouch AutoTouch.app/
+        mv Info.plist AutoTouch.app/
+        mkdir -p Payload
+        cp -r AutoTouch.app Payload/
+        zip -r AutoTouch.ipa Payload
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AutoTouchAppFile
+        path: AutoTouch.ipa
